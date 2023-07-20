@@ -7,38 +7,6 @@ import * as React from 'react';
 import TextButton from "@/components/buttons/TextButton";
 
 export default function HomePage() {
-  /*
-  const [startTime, setStartTime] = React.useState(Date.now());
-  const [currentTime, setCurrentTime] = React.useState(Date.now());
-  const [isRunning, setIsRunning] = React.useState(false);
-  const [shouldRestart, setShouldRestart] = React.useState(true);
-
-  React.useEffect(() => {
-    if (isRunning) {
-      const interval = setInterval(() => {
-        setCurrentTime(Date.now());
-      }, 10);
-  
-      return () => { clearInterval(interval); };  
-    }
-  }, [isRunning]);
-
-  const resetTimer = () => {
-    setShouldRestart(true);
-    setStartTime(Date.now());
-    setCurrentTime(Date.now());
-  }
-
-  const toggleTimer = () => {
-    if (!isRunning && shouldRestart) {
-      resetTimer();
-      setShouldRestart(false);
-    }
-
-    setIsRunning(wasRunning => !wasRunning);
-  }
-  */
-
   const [elapsedTime, setElapsedTime] = React.useState(0);
   const [lastTime, setLastTime] = React.useState(Date.now());
   const [isRunning, setIsRunning] = React.useState(false);
@@ -62,10 +30,14 @@ export default function HomePage() {
     setLaps([]);
   };
 
+  const getCurrentLapTime = () => {
+    const totalElapsedPrevious = laps.reduce((partialSum, current) => partialSum + current, 0);
+    return elapsedTime - totalElapsedPrevious;
+  }
+
   const addLap = () => {
     setLaps((oldLaps) => {
-      const totalElapsedPrevious = oldLaps.reduce((partialSum, current) => partialSum + current, 0);
-      return [...oldLaps, elapsedTime - totalElapsedPrevious];
+      return [getCurrentLapTime(), ...oldLaps];
     });
   };
 
@@ -81,6 +53,9 @@ export default function HomePage() {
     }
   }, [isRunning, lastTime]);
   
+  const fastestLapIndex = laps.indexOf(Math.min(...laps));
+  const slowestLapIndex = laps.indexOf(Math.max(...laps));
+
   return (
     <main>
       <Head>
@@ -99,11 +74,19 @@ export default function HomePage() {
         )}>{isRunning ? "Stop" : "Start"}</TextButton>
 
         <ul>
+          <li>
+            <span>Lap {laps.length + 1} </span>
+            <span>{formatMs(getCurrentLapTime())}</span>
+          </li>
+
           {
             laps.map((lapTime, index) => {
               return (
-                <li key={index}>
-                  <span>Lap {index + 1} </span>
+                <li key={index} className={clsx(
+                  laps.length > 2 && index == fastestLapIndex && "text-green-500",
+                  laps.length > 2 && index == slowestLapIndex && "text-red-500"
+                )}>
+                  <span>Lap {laps.length - index} </span>
                   <span>{formatMs(lapTime)}</span>
                 </li>
               );

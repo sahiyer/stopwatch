@@ -59,11 +59,13 @@ export default function HomePage() {
   const resetTimer = () => {
     setElapsedTime(0);
     setIsRunning(false);
+    setLaps([]);
   };
 
   const addLap = () => {
     setLaps((oldLaps) => {
-      return [...oldLaps, elapsedTime];
+      const totalElapsedPrevious = oldLaps.reduce((partialSum, current) => partialSum + current, 0);
+      return [...oldLaps, elapsedTime - totalElapsedPrevious];
     });
   };
 

@@ -7,6 +7,7 @@ import * as React from 'react';
 import TextButton from "@/components/buttons/TextButton";
 
 export default function HomePage() {
+  /*
   const [startTime, setStartTime] = React.useState(Date.now());
   const [currentTime, setCurrentTime] = React.useState(Date.now());
   const [isRunning, setIsRunning] = React.useState(false);
@@ -36,6 +37,40 @@ export default function HomePage() {
 
     setIsRunning(wasRunning => !wasRunning);
   }
+  */
+
+  const [elapsedTime, setElapsedTime] = React.useState(0);
+  const [lastTime, setLastTime] = React.useState(Date.now());
+  const [isRunning, setIsRunning] = React.useState(false);
+
+  const toggleTimer = () => {
+    setIsRunning((wasRunning) => {
+      const now = Date.now();
+      if (wasRunning) {
+        setElapsedTime(prevElapsed => prevElapsed + (now - lastTime));
+      }
+
+      setLastTime(now);
+      return !wasRunning;
+    });
+  }
+
+  const resetTimer = () => {
+    setElapsedTime(0);
+    setIsRunning(false);
+  }
+
+  React.useEffect(() => {
+    if (isRunning) {
+      const interval = setInterval(() => {
+        const now = Date.now();
+        setElapsedTime(prevElapsed => prevElapsed + (now - lastTime));
+        setLastTime(now);
+      });
+
+      return () => { clearInterval(interval); };
+    }
+  }, [isRunning, lastTime]);
   
   return (
     <main>
@@ -43,7 +78,7 @@ export default function HomePage() {
         <title>Stopwatch</title>
       </Head>
       <div>
-        <h1>{formatMs(currentTime - startTime)}</h1>
+        <h1>{formatMs(elapsedTime)}</h1>
 
         <TextButton onClick={resetTimer} className="font-normal bg-gray-600 text-white">Reset</TextButton>
 

@@ -1,67 +1,67 @@
 'use client';
 
+import clsx from 'clsx';
 import Head from 'next/head';
 import * as React from 'react';
 
-import ArrowLink from '@/components/links/ArrowLink';
-import ButtonLink from '@/components/links/ButtonLink';
-import UnderlineLink from '@/components/links/UnderlineLink';
-import UnstyledLink from '@/components/links/UnstyledLink';
-
-/**
- * SVGR Support
- * Caveat: No React Props Type.
- *
- * You can override the next-env if the type is important to you
- * @see https://stackoverflow.com/questions/68103844/how-to-override-next-js-svg-module-declaration
- */
-import Logo from '~/svg/Logo.svg';
+import TextButton from "@/components/buttons/TextButton";
 
 export default function HomePage() {
+  const [startTime, setStartTime] = React.useState(Date.now());
+  const [currentTime, setCurrentTime] = React.useState(Date.now());
+  const [isRunning, setIsRunning] = React.useState(false);
+  const [shouldRestart, setShouldRestart] = React.useState(true);
+
+  React.useEffect(() => {
+    if (isRunning) {
+      const interval = setInterval(() => {
+        setCurrentTime(Date.now());
+      }, 10);
+  
+      return () => { clearInterval(interval); };  
+    }
+  }, [isRunning]);
+
+  const resetTimer = () => {
+    setShouldRestart(true);
+    setStartTime(Date.now());
+    setCurrentTime(Date.now());
+  }
+
+  const toggleTimer = () => {
+    if (!isRunning && shouldRestart) {
+      resetTimer();
+      setShouldRestart(false);
+    }
+
+    setIsRunning(wasRunning => !wasRunning);
+  }
+  
   return (
     <main>
       <Head>
-        <title>Hi</title>
+        <title>Stopwatch</title>
       </Head>
-      <section className='bg-white'>
-        <div className='layout relative flex min-h-screen flex-col items-center justify-center py-12 text-center'>
-          <Logo className='w-16' />
-          <h1 className='mt-4'>Next.js + Tailwind CSS + TypeScript Starter</h1>
-          <p className='mt-2 text-sm text-gray-800'>
-            A starter for Next.js, Tailwind CSS, and TypeScript with Absolute
-            Import, Seo, Link component, pre-configured with Husky{' '}
-          </p>
-          <p className='mt-2 text-sm text-gray-700'>
-            <ArrowLink href='https://github.com/theodorusclarence/ts-nextjs-tailwind-starter'>
-              See the repository
-            </ArrowLink>
-          </p>
+      <div>
+        <h1>{formatMs(currentTime - startTime)}</h1>
 
-          <ButtonLink className='mt-6' href='/components' variant='light'>
-            See all components
-          </ButtonLink>
+        <TextButton onClick={resetTimer} className="font-normal bg-gray-600 text-white">Reset</TextButton>
 
-          <UnstyledLink
-            href='https://vercel.com/new/git/external?repository-url=https%3A%2F%2Fgithub.com%2Ftheodorusclarence%2Fts-nextjs-tailwind-starter'
-            className='mt-4'
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              width='92'
-              height='32'
-              src='https://vercel.com/button'
-              alt='Deploy with Vercel'
-            />
-          </UnstyledLink>
-
-          <footer className='absolute bottom-2 text-gray-700'>
-            © {new Date().getFullYear()} By{' '}
-            <UnderlineLink href='https://theodorusclarence.com?ref=tsnextstarter'>
-              Theodorus Clarence
-            </UnderlineLink>
-          </footer>
-        </div>
-      </section>
+        <TextButton onClick={toggleTimer} className={clsx(
+          "font-normal",
+          isRunning
+            ? "bg-red-800 text-red-500 hover:bg-red-700 active:bg-red-900"
+            : "bg-green-700 text-lime-400 hover:bg-green-600 active:bg-green-800"
+        )}>{isRunning ? "Stop" : "Start"}</TextButton>
+      </div>
     </main>
   );
+}
+
+function formatMs(value: number): string {
+  const hundreths = Math.floor((value % 1000) / 10);
+  const seconds = Math.floor(value / 1000) % 60;
+  const minutes = Math.floor((value / 1000) / 60);
+  
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}.${hundreths.toString().padStart(2, "0")}`;
 }

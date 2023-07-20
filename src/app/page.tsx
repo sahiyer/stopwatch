@@ -42,6 +42,7 @@ export default function HomePage() {
   const [elapsedTime, setElapsedTime] = React.useState(0);
   const [lastTime, setLastTime] = React.useState(Date.now());
   const [isRunning, setIsRunning] = React.useState(false);
+  const [laps, setLaps] = React.useState(new Array<number>());
 
   const toggleTimer = () => {
     setIsRunning((wasRunning) => {
@@ -53,12 +54,18 @@ export default function HomePage() {
       setLastTime(now);
       return !wasRunning;
     });
-  }
+  };
 
   const resetTimer = () => {
     setElapsedTime(0);
     setIsRunning(false);
-  }
+  };
+
+  const addLap = () => {
+    setLaps((oldLaps) => {
+      return [...oldLaps, elapsedTime];
+    });
+  };
 
   React.useEffect(() => {
     if (isRunning) {
@@ -80,7 +87,7 @@ export default function HomePage() {
       <div>
         <h1>{formatMs(elapsedTime)}</h1>
 
-        <TextButton onClick={resetTimer} className="font-normal bg-gray-600 text-white">Reset</TextButton>
+        <TextButton onClick={isRunning ? addLap : resetTimer} className="font-normal bg-gray-600 text-white">{isRunning ? "Lap" : "Reset"}</TextButton>
 
         <TextButton onClick={toggleTimer} className={clsx(
           "font-normal",
@@ -88,6 +95,19 @@ export default function HomePage() {
             ? "bg-red-800 text-red-500 hover:bg-red-700 active:bg-red-900"
             : "bg-green-700 text-lime-400 hover:bg-green-600 active:bg-green-800"
         )}>{isRunning ? "Stop" : "Start"}</TextButton>
+
+        <ul>
+          {
+            laps.map((lapTime, index) => {
+              return (
+                <li key={index}>
+                  <span>Lap {index + 1} </span>
+                  <span>{formatMs(lapTime)}</span>
+                </li>
+              );
+            })
+          }
+        </ul>
       </div>
     </main>
   );
